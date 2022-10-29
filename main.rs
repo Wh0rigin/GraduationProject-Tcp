@@ -14,23 +14,27 @@ fn main(){
 }
 
 fn worker_server(){
-    
-    let listener = TcpListener::bind("127.0.0.1:9544");
+    let mut thread_Vec: Vec<thread::JoinHandle<()>> = Vec::new();
+    let listener = TcpListener::bind("127.0.0.1:8600");
     if !listener.is_ok(){
         println!("[Log]:bind error...");
         return;
     }
     let listener = listener.unwrap();
     for stream in listener.incoming(){
-        if !stream.is_ok(){
-            println!("[Log]:error...");
-            continue;
-        }
-        let mut stream = stream.unwrap();
-        if false == process_stream(stream){
-            println!("[Log]:error...");
-            continue;
-        }
+        let stream = stream.expect("failed");
+        // if !stream.is_ok(){
+        //     println!("[Log]:error...");
+        //     continue;
+        // }
+        let handle = thread::spawn(move || {
+            process_stream(stream);
+        });
+        thread_Vec.push(handle);
+        // if false == process_stream(stream){
+        //     println!("[Log]:error...");
+        //     continue;
+        // }
     }
 }
 
